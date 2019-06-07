@@ -1,21 +1,31 @@
-Select respondentid, PSR_PT, CI_PT, PSR_PS, CI_PS, PSR_0_5, CI_0_5
-from LA_Temp.dbo.BH_Provider_SurveyResponse 
-where respondentid = '10380308136' 
+/*************** UnPivot w/ Cross Apply ********************/	
+create table #UnPivot (
+	  Member varchar(20)	
+	, Diagnosis1 varchar(20) NULL
+	, Diagnosis2 varchar(20) NULL
+	, Diagnosis3 varchar(20) NULL
+	, Diagnosis4 varchar(20) NULL
+	, Diagnosis5 varchar(20) NULL
+)
 
+insert into #UnPivot values 
+('g100000001','E87.2','A41.9','R65.20','R79.89','C34.90'),	
+('g100000002','H66.93','H10.9','R50.9','H92.03',NULL),
+('g100000003','F32.9','Z13.89',NULL,NULL,NULL)
 
 Select 
-	r.RespondentID
-	, r.Respond_Num
-	, PT
-	, PS
-	, Age_0_5 
-	, Cat --Category
-from LA_Temp.dbo.BH_Provider_SurveyResponse r
+	  Member
+	, Diagnosis
+	, DiagnosisSequence
+from #UnPivot
 cross apply
 (
   values
-    (PSR_PT, PSR_PS, PSR_0_5, 'PSR'),
-    (CI_PT, CI_PS, CI_0_5, 'CI')
-) c (PT, PS, Age_0_5, Cat)
-where r.respondentid = '10380308136' 
+          (Diagnosis1, 1)
+	, (Diagnosis2, 2)
+	, (Diagnosis3, 3)
+	, (Diagnosis4, 4)
+	, (Diagnosis5, 5)
 
+) c (Diagnosis, DiagnosisSequence)
+where c.Diagnosis is not null
