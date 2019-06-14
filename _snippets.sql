@@ -99,10 +99,29 @@ c.name like '%Fee%'     --Type the column you are searching for here. I use a wi
     a.market
     ,a.servname
     ,office_name=
-      STUFF((SELECT DISTINCT  ', '+rTRIM(office_name) 
-      FROM tbl WHERE servname=A.servname AND market= a.market	
-      FOR XML PATH('')) , 1 , 1 , '' )
+	STUFF((SELECT DISTINCT  ', '+rTRIM(office_name) 
+	FROM tbl WHERE servname=A.servname AND market= a.market	
+	FOR XML PATH('')) , 1 , 1 , '' )			 					 
   FROM tbl a
+  
+--A better method				 
+					 
+select 
+	  Memos = STUFF((
+		SELECT ',' +  cast(m.message as varchar(max))
+		FROM claimmemo cm
+			left join memo m
+				on m.memoid = cm.memoid
+		WHERE cm.claimid = c.claimid
+		FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
+	, Edits = STUFF((
+		SELECT ',' + cast(ce.RuleDesc as varchar(max))
+		FROM LA_Ops_Temp.dbo.vClaimEdits ce	
+		WHERE ce.Claimid = c.claimid
+		FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
+	, c.*
+from la_ops_temp.dbo.vClaimsAll c
+  
   
    /*************** Search for Tables********************/
   
